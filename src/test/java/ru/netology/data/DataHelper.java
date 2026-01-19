@@ -30,4 +30,16 @@ public class DataHelper {
     public static class VerificationCode {
         String code;
     }
+
+    public static int getValidTransferAmount(int currentBalance) {
+        if (currentBalance <= 0) {
+            return 1;
+        }
+
+        return Math.max(1, currentBalance / 10);
+    }
+
+    public static int getOverdraftAmount(int currentBalance) {
+        return currentBalance + 500;
+    }
 }
