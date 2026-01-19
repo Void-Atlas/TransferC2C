@@ -31,15 +31,24 @@ public class DataHelper {
         String code;
     }
 
-    public static int getValidTransferAmount(int currentBalance) {
-        if (currentBalance <= 0) {
-            return 1;
-        }
 
-        return Math.max(1, currentBalance / 10);
+    @Value
+    public static class CardInfo {
+        String testId;
+        String lastFourDigits;
     }
 
-    public static int getOverdraftAmount(int currentBalance) {
-        return currentBalance + 500;
+    public static CardInfo getFirstCard() {
+        return new CardInfo(
+                "92df3f1c-a033-48e6-8390-206f6b1f56c0",
+                "5559 0000 0000 0001"
+        );
+    }
+
+    public static CardInfo getSecondCard() {
+        return new CardInfo(
+                "0f3f5c2a-249e-4c3d-8287-09f7a039391d",
+                "5559 0000 0000 0002"
+        );
     }
 }

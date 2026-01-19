@@ -1,6 +1,7 @@
 package ru.netology.test;
 
 import com.codeborne.selenide.Selenide;
+import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.netology.data.DataHelper;
@@ -8,7 +9,11 @@ import ru.netology.page.DashBoardPage;
 import ru.netology.page.LoginPageV3;
 
 import static com.codeborne.selenide.Selenide.open;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static ru.netology.data.DataHelper.getFirstCard;
+import static ru.netology.data.DataHelper.getSecondCard;
+import static ru.netology.page.DashBoardPage.pushFirstCardButton;
+import static ru.netology.page.DashBoardPage.pushSecondCardButton;
 
 public class MoneyTransferTest {
 
@@ -27,17 +32,30 @@ public class MoneyTransferTest {
     }
 
     @Test
-    void shouldTransferMoneyFromFirstToSecondCard() {
-        int balanceBefore = dashboard.getFirstCardBalance();
+    public void shouldTransferFrom1To2() {
+        int amount = 3500;
+        val dashBoardPage = new DashBoardPage();
+        val firstCardBalanceStart = dashBoardPage.getFirstCardBalance();
+        val secondCardBalanceStart = dashBoardPage.getSecondCardBalance();
+        val transactionPage = pushSecondCardButton();
+        transactionPage.makeTransfer(String.valueOf(amount), getFirstCard().getLastFourDigits()); // Исправлено
+        val firstCardBalanceFinish = firstCardBalanceStart - amount;
+        val secondCardBalanceFinish = secondCardBalanceStart + amount;
+        assertEquals(firstCardBalanceFinish, dashBoardPage.getFirstCardBalance());
+        assertEquals(secondCardBalanceFinish, dashBoardPage.getSecondCardBalance());
+    }
 
-        int amount = balanceBefore / 10;
-
-        dashboard.selectCardToTransfer("0f3f5c2a-249e-4c3d-8287-09f7a039391d")
-                .makeTransfer(String.valueOf(amount), "5559 0000 0000 0001");
-
-        int balanceAfter = dashboard.getFirstCardBalance();
-
-        assertTrue(balanceAfter < balanceBefore,
-                "Баланс карты отправителя должен уменьшиться после перевода");
+    @Test
+    public void shouldTransferFrom2To1() {
+        int amount = 5000;
+        val dashBoardPage = new DashBoardPage();
+        val firstCardBalanceStart = dashBoardPage.getFirstCardBalance();
+        val secondCardBalanceStart = dashBoardPage.getSecondCardBalance();
+        val transactionPage = pushFirstCardButton();
+        transactionPage.makeTransfer(String.valueOf(amount), getSecondCard().getLastFourDigits()); // Исправлено
+        val firstCardBalanceFinish = firstCardBalanceStart + amount;
+        val secondCardBalanceFinish = secondCardBalanceStart - amount;
+        assertEquals(firstCardBalanceFinish, dashBoardPage.getFirstCardBalance());
+        assertEquals(secondCardBalanceFinish, dashBoardPage.getSecondCardBalance());
     }
 }
