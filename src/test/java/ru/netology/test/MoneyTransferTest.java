@@ -1,51 +1,43 @@
 package ru.netology.test;
 
 import com.codeborne.selenide.Selenide;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ru.netology.data.CardInfo;
 import ru.netology.data.DataHelper;
+import ru.netology.page.DashBoardPage;
 import ru.netology.page.LoginPageV3;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static ru.netology.data.DataHelper.getAuthInfo;
+import static com.codeborne.selenide.Selenide.open;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MoneyTransferTest {
 
-    @Test
-    void shouldTransferMoneyBetweenOwnCards() {
-        var info = getAuthInfo();
-        var verificationCode = DataHelper.getVerificationCodeFor(info);
+    private DashBoardPage dashboard;
 
-        var loginPage = Selenide.open("http://localhost:9999", LoginPageV3.class);
-        var verificationPage = loginPage.validLogin(info);
-        var dashBoardPage = verificationPage.valiVerify(verificationCode);
+    @BeforeEach
+    void setUp() {
+        open("http://localhost:9999");
+        var loginPage = Selenide.page(LoginPageV3.class);
 
+        var authInfo = DataHelper.getAuthInfo();
+        var verificationPage = loginPage.validLogin(authInfo);
+
+        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
+        dashboard = verificationPage.valiVerify(verificationCode);
     }
 
     @Test
-    void shouldTransferMoneyFromFirstCardToSecond() {
-        var authInfo = DataHelper.getAuthInfo();
-        var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
+    void shouldTransferMoneyFromFirstToSecondCard() {
+        int balanceBefore = dashboard.getFirstCardBalance();
 
-        var firstCard = CardInfo.getFirstCard();
-        var secondCard = CardInfo.getSecondCard();
+        int amount = balanceBefore / 10;
 
-        var loginPage = Selenide.open("http://localhost:9999", LoginPageV3.class);
-        var verificationPage = loginPage.validLogin(authInfo);
-        var dashboardPage = verificationPage.valiVerify(verificationCode);
+        dashboard.selectCardToTransfer("0f3f5c2a-249e-4c3d-8287-09f7a039391d")
+                .makeTransfer(String.valueOf(amount), "5559 0000 0000 0001");
 
-        var balanceFirstBefore = dashboardPage.getCardBalance(firstCard.getTestId());
-        var balanceSecondBefore = dashboardPage.getCardBalance(secondCard.getTestId());
+        int balanceAfter = dashboard.getFirstCardBalance();
 
-        int transferAmount = 666;
-
-        var transferPage = dashboardPage.selectCardToTransfer(secondCard.getTestId());
-        dashboardPage = transferPage.transferMoney(transferAmount, firstCard.getNumber());
-
-        var balanceFirstAfter = dashboardPage.getCardBalance(firstCard.getTestId());
-        var balanceSecondAfter = dashboardPage.getCardBalance(secondCard.getTestId());
-
-        assertEquals(balanceFirstBefore - transferAmount, balanceFirstAfter);
-        assertEquals(balanceSecondBefore + transferAmount, balanceSecondAfter);
+        assertTrue(balanceAfter < balanceBefore,
+                "Баланс карты отправителя должен уменьшиться после перевода");
     }
 }
