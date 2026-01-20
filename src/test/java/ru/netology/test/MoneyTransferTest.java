@@ -17,7 +17,7 @@ import static ru.netology.page.DashBoardPage.pushSecondCardButton;
 
 public class MoneyTransferTest {
 
-    private DashBoardPage dashboard;
+    private DashBoardPage dashBoardPage;
 
     @BeforeEach
     void setUp() {
@@ -28,31 +28,30 @@ public class MoneyTransferTest {
         var verificationPage = loginPage.validLogin(authInfo);
 
         var verificationCode = DataHelper.getVerificationCodeFor(authInfo);
-        dashboard = verificationPage.valiVerify(verificationCode);
+        dashBoardPage = verificationPage.valiVerify(verificationCode);
     }
 
     @Test
     public void shouldTransferFrom1To2() {
-        int amount = 3500;
-        val dashBoardPage = new DashBoardPage();
         val firstCardBalanceStart = dashBoardPage.getFirstCardBalance();
         val secondCardBalanceStart = dashBoardPage.getSecondCardBalance();
+        int amount = DataHelper.calculateTransferAmount(firstCardBalanceStart);
         val transactionPage = pushSecondCardButton();
-        transactionPage.makeTransfer(String.valueOf(amount), getFirstCard().getLastFourDigits()); // Исправлено
+        transactionPage.makeTransfer(String.valueOf(amount), getFirstCard().getLastFourDigits());
         val firstCardBalanceFinish = firstCardBalanceStart - amount;
         val secondCardBalanceFinish = secondCardBalanceStart + amount;
         assertEquals(firstCardBalanceFinish, dashBoardPage.getFirstCardBalance());
         assertEquals(secondCardBalanceFinish, dashBoardPage.getSecondCardBalance());
     }
 
+
     @Test
     public void shouldTransferFrom2To1() {
-        int amount = 5000;
-        val dashBoardPage = new DashBoardPage();
         val firstCardBalanceStart = dashBoardPage.getFirstCardBalance();
         val secondCardBalanceStart = dashBoardPage.getSecondCardBalance();
+        int amount = DataHelper.calculateTransferAmount(secondCardBalanceStart);
         val transactionPage = pushFirstCardButton();
-        transactionPage.makeTransfer(String.valueOf(amount), getSecondCard().getLastFourDigits()); // Исправлено
+        transactionPage.makeTransfer(String.valueOf(amount), getSecondCard().getLastFourDigits());
         val firstCardBalanceFinish = firstCardBalanceStart + amount;
         val secondCardBalanceFinish = secondCardBalanceStart - amount;
         assertEquals(firstCardBalanceFinish, dashBoardPage.getFirstCardBalance());

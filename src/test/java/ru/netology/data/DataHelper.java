@@ -51,4 +51,8 @@ public class DataHelper {
                 "5559 0000 0000 0002"
         );
     }
+
+    public static int calculateTransferAmount(int balance) {
+        return balance / 2;
+    }
 }
